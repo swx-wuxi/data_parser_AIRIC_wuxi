@@ -1,0 +1,282 @@
+syntax = "proto2";
+
+package rina.perception;
+
+import "rina_messages/msgs/common/header.proto";
+import "rina_messages/msgs/common/geometry.proto";
+
+// Doc: https://r712him1th.feishu.cn/docx/PPnEdOQVMoAnwJxjaLZcWfDZnGh
+
+enum RERole {
+  REROLE_UNKNOWN = 1;
+  REROLE_LEFT = 2;
+  REROLE_RIGHT = 3;
+}
+
+// cam_id is in consistent with perception model config
+enum CameraID{
+  FRONT30= 0;
+  FRONT120= 1;
+  REAR= 3;
+  REARLEFT= 4;
+  FRONTLEFT= 5;
+  REARRIGHT= 6;
+  FRONTRIGHT= 7;
+}
+
+message Poly {
+  optional double C0 = 1;
+  optional double C1 = 2;
+  optional double C2 = 3;
+  optional double C3 = 4;
+}
+
+message LinePoint {
+  optional rina.common.Point3D point = 1;
+  optional double heading = 2;
+}
+
+message LineProperty {
+  enum LPType {
+    TYPE_UNKNOWN = 0;
+    TYPE_SOLID = 1;
+    TYPE_DASH = 2;
+    TYPE_RAMP_DASH = 3;
+    TYPE_SOLID_DASH = 4;  // definition is from left to right
+    TYPE_DASH_SOLID = 5;  // definition is from left to right
+    TYPE_DOUBLE = 6;
+  }
+  enum LPColor {
+    COLOR_UNKNOWN = 0;
+    COLOR_WHITE = 1;
+    COLOR_YELLOW = 2;
+    COLOR_BLUE = 3;
+    COLOR_ORANGE = 4;
+    COLOR_GREEN = 5;
+    COLOR_YELLO_WHITE = 6;  // definition is from left to right
+    COLOR_WHITE_YELLO = 7;  // definition is from left to right
+  }
+  enum LPDetectType {
+    DETECTED = 0;
+    PARTIAL_PREDICTED = 1;
+    PREDICTED = 2;
+  }
+  enum LDPredictReason { LINE_BLOCKAGE = 0; }
+  optional double confidence = 1;
+  optional LPType type = 2;
+  optional double type_confidence = 3;
+  optional LPColor color = 4;
+  optional double color_confidence = 5;
+  optional Poly ploy = 6;
+  // based on ISO vehicle coordinate the x axies distance
+  optional double start = 7;
+  optional double end = 8;
+  optional LPDetectType detect_type = 9;
+  // based on ISO vehicle coordinate the x axies distance
+  optional double predicted_start = 10;
+  optional double predicted_end = 11;
+  optional LDPredictReason predict_reason = 12;
+  // Indicate this line has a relationship of split or merge with another line.
+  optional bool split = 13;
+  // Indicate this laneline is belongs to the waiting area.
+  optional bool waitlane = 14;
+}
+
+message RoadSlop {
+  // todo
+  optional float reserved = 1;
+}
+
+message RoadEdge {
+  enum REType {
+    TYPE_UNKNOWN = 1;
+    TYPE_CONE = 2;
+    TYPE_BARRIER = 3;
+    TYPE_GRASS = 4;
+    TYPE_PARKED_VEHICLE = 5;
+    TYPE_FRENCE = 6;
+    TYPE_PEBBLE = 7;
+    TYPE_STONE = 8;
+  }
+
+  optional uint32 track_id = 1;
+  optional uint32 track_count = 2;
+  optional REType type = 3;
+  optional double confidence = 4;
+  optional bool crossable = 5;
+  optional RERole role = 6 [default = REROLE_UNKNOWN];
+  optional double height = 7;
+  repeated LineProperty line_piecewice = 8;
+  repeated LinePoint point = 9;
+}
+
+message LaneMeta {
+  enum LaneTurn {
+    UNKNOWN = 0;
+    FORWARD = 1;
+    FORWARD_TURNLEFT = 2;
+    FORWARD_TURNLEFT_UTURN = 3;
+    FORWARD_TURNLEFT_TURNRIGHT = 4;
+    FORWARD_TURNRIGHT = 5;
+    FORWARD_UTURN = 6;
+    TURNLEFT = 7;
+    TURNLEFT_TURNRIGHT = 8;
+    TURNRIGHT = 9;
+  };
+  optional uint32 track_id = 1;
+  optional uint32 track_count = 2;
+  /*
+   *       |   |   |   |   |   |
+   *       | n |   |   |   | n |
+   *       | e |   |   |   | e |
+   *       | x | l | h | r | x |
+   *       | t | e | o | i | t |
+   *  .... |   | f | s | g |   | ....
+   *       | l | t | t | h | r |
+   *       | e |   |   | t | i |
+   *       | f |   |   |   | g |
+   *       | t |   |   |   | h |
+   *       |   |   |   |   | t |  follow ISO, left is positive
+   *       |   |   |   |   |   |  255: unknwon role
+   *       | 2 | 1 | 0 | -1| -2|  lane role
+   */
+  optional int32 lane_role = 3 [default = 255];
+  optional LaneTurn lane_turn = 4 [default = UNKNOWN];
+  repeated LineProperty center_line = 5;
+  optional double lane_width = 6;
+  optional int32 left_line_role = 7 [default = 255];
+  optional int32 right_line_role = 8 [default = 255];
+  optional RERole left_road_edge_role = 9 [default = REROLE_UNKNOWN];
+  optional RERole right_road_edge_role = 10 [default = REROLE_UNKNOWN];
+  optional bool is_parallel_limit = 11;
+}
+
+message LaneLine {
+  optional uint32 track_id = 1;
+  optional uint32 track_count = 2;
+  /*
+   *       |   |   |   |   |   |
+   *       | n |   |   |   | n |
+   *       | e |   |   |   | e |
+   *       | x | l | h | r | x |
+   *       | t | e | o | i | t |
+   *  .... |   | f | s | g |   | ....
+   *       | l | t | t | h | r |
+   *       | e |   |   | t | i |
+   *       | f |   |   |   | g |
+   *       | t |   |   |   | h |
+   *       |   |   |   |   | t |  follow ISO, left is positive
+   *       |   |   |   |   |   |  255: unknwon role
+   *       3   2   1  -1  -2  -3  line role
+   */
+  optional int32 line_role = 3 [default = 255];
+  repeated LineProperty line_piecewice = 4;
+  optional bool is_multi_clothoid = 5;
+  repeated LinePoint point = 6;
+  optional double marker_width = 7;
+  optional double confidence = 8;
+}
+
+message Arrow {
+  enum ArrowType {
+    TYPE_STRAIGHT = 0;
+    TYPE_LEFT = 1;
+    TYPE_RIGHT = 2;
+    TYPE_UTURN = 3;
+    TYPE_STRAIGHT_UTURN = 4;
+    TYPE_STRAIGHT_LEFT = 5;
+    TYPE_STRAIGHT_RIGHT = 6;
+    TYPE_LEFT_UTURN = 7;
+    TYPE_LEFT_RIGHT = 8;
+    TYPE_LEFT_STRAIGHT_RIGHT = 9;
+    TYPE_LEFT_DIVERSION = 10;
+    TYPE_RIGHT_DIVERSION = 11;
+  };
+  repeated LinePoint point = 1;
+  required ArrowType type = 2;
+  optional double confidence = 3;
+}
+
+message CenterLine {
+  // Direction of centerline is represented by the order of linepoint.
+  repeated LinePoint point = 1;
+  optional double confidence = 2;
+}
+
+message LaneLine2d {
+  repeated LineProperty line_piecewise = 4;
+  optional bool is_multi_clothoid = 5;
+  repeated rina.common.Point2D point = 6;
+  optional CameraID cam_id = 7;
+}
+
+message StopLine {
+  optional uint32 track_id = 1;
+  optional uint32 track_count = 2;
+  repeated LineProperty stop_line_piecewice = 3;
+  repeated uint32 related_lane_id = 4;
+  optional double confidence = 5;
+  repeated LinePoint point = 6;
+}
+
+message CrossWalk {
+  optional uint32 track_id = 1;
+  optional uint32 track_count = 2;
+  optional rina.common.Polygon ploygon = 3;
+  repeated uint32 related_lane_id = 4;
+  repeated LineProperty cloest_side_line = 5;
+  repeated LinePoint point = 6;
+}
+
+message InterestPoint {
+  enum IPType {
+    TYPE_UNKNOWN = 0;
+    TYPE_SPLIT = 1;
+    TYPE_MERGE = 2;
+    TYPE_LINE_TYPE_CHANGE = 3;
+    TYPE_LINE_COLOR_CHANGE = 4;
+  }
+  optional uint32 track_id = 1;
+  optional uint32 track_count = 2;
+  optional IPType type = 3;
+  optional rina.common.Point3D point = 4;
+  repeated int32 attach_line_role = 5;
+}
+
+message AreaSemantic {
+  enum ASType {
+    TYPE_UNKNOWN = 0;
+    TYPE_BUS_LANE = 1;
+    TYPE_PARKING_AREA = 2;
+    TYPE_TEMP_PARKING_AREA = 3;  // Temporary parking area
+  }
+  enum ASSide {
+    SIDE_UNKNOWN = 0;
+    SIDE_LEFT = 1;
+    SIDE_RIGHT = 2;
+  }
+  optional uint32 track_id = 1;
+  optional uint32 track_count = 2;
+  optional ASType type = 3;
+  optional ASSide side = 4;
+  optional rina.common.Polygon ploygon = 5;
+}
+
+message PerceptionRoad {
+  optional rina.common.Header header = 1;  // header
+
+  optional bool crossing_line = 2;
+  optional uint32 crossing_line_id = 3;
+  optional RoadSlop road_slop = 4;
+  optional uint32 lane_num = 5;
+  repeated LaneMeta lane_meta = 6;
+  repeated LaneLine lane_line = 7;
+  repeated LaneLine2d lane_line_2d = 71;
+  repeated RoadEdge road_edge = 8;
+  repeated StopLine stop_line = 9;
+  repeated CrossWalk cross_walk = 10;
+  repeated InterestPoint interest_point = 11;
+  repeated AreaSemantic area_semantic = 12;
+  repeated CenterLine center_line = 13;
+  repeated Arrow arrow = 14;
+}

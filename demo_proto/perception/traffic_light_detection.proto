@@ -1,0 +1,85 @@
+syntax = "proto2";
+
+package rina.perception;
+
+import "rina_messages/msgs/common/header.proto";
+import "rina_messages/msgs/common/geometry.proto";
+import "rina_messages/msgs/perception/perception_road.proto";
+
+enum TrafficColor {
+  UNKNOWN_COLOR = 0;
+  RED = 1;
+  GREEN = 2;
+  YELLOW = 3;
+  BLACK = 4;
+}
+
+enum TrafficType {
+  UNKNOWN_TYPE = 0;
+  CIRCLE = 1;
+  ARROW_LEFT = 2;
+  ARROW_RIGHT = 3;
+  ARROW_STRAIGHT = 4;
+  ARROW_BACK = 5;
+  ARROW_LEFT_AND_BACK = 6;
+  ARROW_STRAIGHT_AND_LEFT = 7;
+  OFF = 8;
+  PEDESTRIAN_LIGHT = 9;
+  CYCLE_LIGHT = 10;
+}
+
+enum HeadType {
+  UNKNOWN_HEAD = 0;
+  BACK = 1;  // The yaw is in -22.5~22.5.
+  FACEING_LEFT = 2;  // The yaw is in 67.5~112.5.
+  RIGHT_SLANT = 3;  // The raw is in 112.5~157.5.
+  FORWARD = 4;  // The yaw is in 157.5~202.5.
+  LEFT_SLANT = 5;  // The raw is in 202.5~247.5.
+  FACEING_RIGHT = 6;  // The yaw is in 247.5.5~292.5.
+}
+
+
+message TrafficLight {
+
+  // traffic position in the vrf coordinate system.? which coordinate do we use?
+  optional rina.common.Point3D position = 1;
+
+  // heading in the vrf coordinate system.
+  optional double theta = 2;  
+
+  // Size of traffic bounding box.
+  optional double length = 3;  // traffic length.x
+  optional double width = 4;   // traffic width.y
+  optional double height = 5;  // traffic height.z
+
+  // traffic color
+  optional TrafficColor color = 6;
+
+  // traffic type
+  optional TrafficType type = 7;
+
+  // Traffic ID
+  optional int32 id = 8;
+
+  // How confidence about the detected results, between 0 and 1.
+  optional double color_confidence = 9 [default = 1.0];
+  optional double type_confidence = 10 [default = 1.0];
+
+  // Is traffic blinking
+  optional bool blink = 11 [default = false];
+
+  optional rina.common.Point2D position_2d = 12;
+  optional double width_2d = 13;
+  optional double height_2d = 14;
+
+  optional rina.perception.CameraID camera_id = 15;
+
+  optional int32 digit_number = 16;
+}
+
+message TrafficLightDetection {
+  optional rina.common.Header header = 1;
+  repeated TrafficLight traffic_light = 2;
+  optional bool contain_lights = 3;
+  repeated TrafficLight virtual_traffic_lights = 4;
+}

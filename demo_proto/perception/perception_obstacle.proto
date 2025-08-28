@@ -1,0 +1,260 @@
+syntax = "proto2";
+
+package rina.perception;
+
+import "rina_messages/msgs/common/geometry.proto";
+import "rina_messages/msgs/common/header.proto";
+
+message BBox2D {
+  optional double xmin = 1;  // in pixels.
+  optional double ymin = 2;  // in pixels.
+  optional double xmax = 3;  // in pixels.
+  optional double ymax = 4;  // in pixels.
+}
+
+message LightStatus {
+  optional bool brake_visible = 1;
+  optional bool brake_switch_on = 2;
+  optional bool left_turn_visible = 3;
+  optional bool left_turn_switch_on = 4;
+  optional bool right_turn_visible = 5;
+  optional bool right_turn_switch_on = 6;
+}
+
+
+message SensorMeasurement {
+  optional string sensor_id = 1;
+  optional int32 id = 2;    //obstacle id
+
+  optional rina.common.Point3D position = 3;  // obstacle position in the vrf coordinate system.
+  optional double theta = 4;
+  optional double length = 5;
+  optional double width = 6;
+  optional double height = 7;
+
+  optional rina.common.Point3D velocity = 8;
+
+  optional ObstacleType type = 9;
+  optional double timestamp = 10;
+  optional BBox2D box = 11;   // only for camera measurements, not used right now
+
+  optional rina.common.Point3D world_position = 12; // position in world or absolute coordinate system.
+}
+
+enum MaintenanceStatus {
+  DELETED = 0;
+  NEW = 1;
+  MEASURED = 2;
+  PREDICTED = 3;
+}
+
+message SplitMerge {
+  enum SplitMergeStatus {
+    NONE = 0;
+    SPLIT = 1;
+    MERGE = 2;
+  }
+  optional SplitMergeStatus split_merge_status = 1;
+  optional int32 merge_id = 2;
+  optional int32 split_id = 3;
+}
+
+message ClassificationProbability {
+  optional int32 pedestrian = 1;
+  optional int32 cyclist = 2;
+  optional int32 motorbike = 3;
+  optional int32 car = 4;
+  optional int32 truck = 5;
+  optional int32 othervehicle = 6;
+  optional int32 unknown = 7;
+}
+
+message DynamicPropertyInfo {
+  enum DynamicProperty {
+    OBJ_DYN_PROPERTY_MOVING = 0;
+    OBJ_DYN_PROPERTY_STATIONARY = 1;
+    OBJ_DYN_PROPERTY_ONCOMING = 2;
+    OBJ_DYN_PROPERTY_CROSSING_LEFT = 3;
+    OBJ_DYN_PROPERTY_CROSSING_RIGHT = 4;
+    OBJ_DYN_PROPERTY_UNKNOWN = 5;
+    OBJ_DYN_PROPERTY_STOPPED = 6;
+    OBJ_DYN_PROPERTY_PARKED = 7;
+    OBJ_DYN_PROPERTY_MAX_DIFF_TYPES = 8;
+  };
+  optional DynamicProperty dynamic_property = 1;
+  optional double dynamic_confidence = 2;
+}
+
+enum AssociateLanePositionType {
+  EGO = 0;             // ego lane
+  ADJACENT_LEFT = 1;   // left side next to ego lane
+  THIRD_LEFT = 2;
+  FOURTH_LEFT = 3;
+  ADJACENT_RIGHT = 4;  // right side next to ego lane
+  THIRD_RIGHT = 5;
+  FOURTH_RIGHT = 6;
+}
+
+message LaneAssociation {
+  optional int32 status = 1;
+  optional AssociateLanePositionType associate_lane_position_type = 2;
+  optional double lane_associate_confidence = 3;
+  optional int32 associate_lanes_num = 4;
+  repeated int32 lane_id = 5;
+  repeated double overlap = 6;
+  repeated double confidence = 7;
+  optional int32 lane_change_maneuver = 8;
+  optional double ego_drivingLane_probability = 9;
+  optional double left_lane_change_probability = 10;
+  optional double right_lane_change_probability = 11;
+}
+
+
+
+enum ConfidenceType {
+  CONFIDENCE_UNKNOWN = 0;
+  CONFIDENCE_CAMERA= 1;
+  CONFIDENCE_RADAR = 2;
+  CONFIDENCE_LIDAR = 3;
+  CONFIDENCE_FUSION = 4;
+}
+
+enum ObstacleType {
+  UNKNOWN = 0;
+  UNKNOWN_MOVABLE = 1;
+  UNKNOWN_UNMOVABLE = 2;
+  CAR = 3;
+  VAN = 4;
+  TRUCK = 5;
+  BUS = 6;
+  CYCLIST = 7;
+  MOTORCYCLIST = 8;
+  TRICYCLIST = 9;
+  PEDESTRIAN = 10;
+  CONE = 11;
+  BICYCLE = 12;
+  SPLIT_VEHICLE = 13;
+  BARRIER = 14;
+  WARNING_TRIANGLE = 15;
+  ANIMAL = 16;
+}
+
+message PredictionTrajectory {
+  optional int32 num_trajectory = 1;
+
+  message Trajectory {
+    repeated rina.common.Point3D points = 1;
+  }
+
+  repeated Trajectory trajectories = 2;
+}
+
+message PerceptionObstacle {
+  optional int32 id = 1;  // obstacle ID.
+
+  // obstacle position in the vrf coordinate system.
+  optional rina.common.Point3D position = 2;
+
+  optional double theta = 3;  // heading in the vrf coordinate system.
+  optional rina.common.Point3D velocity = 4;  // obstacle velocity
+
+  // Size of obstacle bounding box.
+  optional double length = 5;  // obstacle length.
+  optional double width = 6;   // obstacle width.
+  optional double height = 7;  // obstacle height.
+
+  repeated rina.common.Point3D polygon_point = 8;  // obstacle corner points.clockwise
+
+  // duration of an obstacle since detection in s.
+  optional double tracking_time = 9;
+
+  optional ObstacleType type = 10;         // obstacle type
+
+  optional double timestamp = 11;  // GPS time in seconds.
+
+  // How confidence about the detected result, between 0 and 1.
+  optional double confidence = 12;
+
+  optional ConfidenceType confidence_type = 13;
+
+  optional rina.common.Point3D acceleration = 14;  // obstacle acceleration
+
+  // a stable obstacle point in the world coordinate system
+  // position defined above is the obstacle bounding box ground center
+  optional rina.common.Point3D anchor_point = 15;
+  optional BBox2D bbox2d = 16;   // Not used right now, box in pixel, only or camera
+
+  // How confidence about the object classification, between 0 and 1.
+  optional double classification_confidence = 17;
+
+  repeated SensorMeasurement measurements = 18;  // Not used right now
+
+  // orthogonal distance between obstacle lowest point and ground plane
+  optional double height_above_ground = 19 [default = nan];   // Not used right now
+
+  // position covariance which is a row-majored 3x3 matrix    //Not used right now
+  repeated double position_covariance = 20 [packed = true];
+  // velocity covariance which is a row-majored 3x3 matrix
+  repeated double velocity_covariance = 21 [packed = true];
+  // acceleration covariance which is a row-majored 3x3 matrix
+  repeated double acceleration_covariance = 22 [packed = true];
+
+  // lights of vehicles
+  optional LightStatus light_status = 23;
+
+  optional double yaw_rate = 24;
+  optional MaintenanceStatus maintenance_status = 25;
+  optional SplitMerge object_split_merge = 26;
+  optional ClassificationProbability classification_probability = 27;
+  optional DynamicPropertyInfo dynamic_property_info = 28;
+  optional LaneAssociation lane_association = 29;
+  // number of lidar points in box
+  optional int32 num_pt_in_box = 30;
+  // number of 2nd echo lidar points in box
+  optional int32 num_pte2_in_box = 31;
+
+  optional PredictionTrajectory prediction_trj = 32;
+
+  // occlusion rate
+  optional double occlusion_rate = 33;  // occlusion rate in (0, 1), 0 is not occluded and 1 is occluded completely
+}
+
+message CIPVInfo {
+  optional int32 cipv_id = 1;
+  repeated int32 potential_cipv_id = 2;
+}
+
+message PerceptionObstacles {
+  repeated PerceptionObstacle perception_obstacles = 1;
+  optional rina.common.Header header = 2;
+  optional CIPVInfo cipv_info = 4;  // Closest In Path Vehicle (CIPV)
+}
+
+enum OccType {
+  UNKNOWN_OCC_TYPE = 0;
+  OCC_OCCLUSION = 1;
+  OCC_FREE = 2;
+  OCC_OCCUPIED = 3;
+}
+
+message OccPoint {
+  optional OccType occ_type = 1;  // occ type
+  optional double occ_score = 2;  // occ score prediction
+  optional double occ_offset = 3;  // occ offset prediction
+  optional double occ_x = 4;  // The x coordinate of occ grid (unit: m)
+  optional double occ_y = 5;
+  optional double occ_z = 6;
+}
+
+message PerceptionOcc {
+  optional rina.common.Header header = 1;
+  optional uint32 bev_height = 2;  // occ bev height (unit: pixel)
+  optional uint32 bev_width = 3;  // occ bev width (unit: pixel)
+  optional double voxel_size_x = 4;  // The size of each voxel in x direction (unit: m)
+  optional double voxel_size_y = 5;
+  optional double voxel_size_z = 6;
+  optional double min_x_range = 7;  // minimum range in x direction (unit: m)
+  optional double min_y_range = 8;
+  optional double min_z_range = 9;
+  repeated OccPoint occ_points = 10;
+}

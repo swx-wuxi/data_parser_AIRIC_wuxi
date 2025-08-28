@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach to debugpy in Docker (apollo2nuplan)",
+      "type": "python",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5678
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",          // 你本机工程目录
+          "remoteRoot": "/home/WorkSpace/apollo2nuplan" // 容器里的工程目录
+        }
+      ]
+    }
+  ]
+}

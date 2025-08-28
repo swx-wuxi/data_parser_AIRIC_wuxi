@@ -1,0 +1,162 @@
+syntax = "proto2";
+
+import "rina_messages/msgs/common/header.proto";
+
+package rina.navi;
+
+enum NavigationIcon {
+    // 无定义
+    NONE = 0;
+    // 自车图标
+    DEFAULT = 1;
+    // 左转图标
+    LEFT = 2;
+    // 右转图标
+    RIGHT = 3;
+    // 左前方图标
+    LEFT_FRONT = 4;
+    // 右前方图标
+    RIGHT_FRONT = 5;
+    // 左后方图
+    LEFT_BACK = 6;
+    // 右后方图标
+    RIGHT_BACK = 7;
+    // 左转掉头图标
+    LEFT_TURN_AROUND = 8;
+    // 直行图标
+    STRAIGHT = 9;
+    // 到达途经点图标
+    ARRIVED_WAYPOINT = 10;
+    // 进入环岛图标
+    ENTER_ROUNDABOUT = 11;
+    // 驶出环岛图标
+    OUT_ROUNDABOUT = 12;
+    // 到达服务区图标
+    ARRIVED_SERVICE_AREA = 13;
+    // 到达收费站图标
+    ARRIVED_TOLLGATE = 14;
+    // 到达目的地图标
+    ARRIVED_DESTINATION = 15;
+    // 到达隧道图标
+    ARRIVED_TUNNEL = 16;
+    // 进入环岛，左侧通行地区的顺时针环岛
+    ENTRY_LEFT_RING = 17;
+    // 驶出环岛，左侧通行地区的顺时针环岛
+    LEAVE_LEFT_RING = 18;
+    // 右转掉头图标 ，左侧通行地区的掉头
+    U_TURN_RIGHT = 19;
+    // 顺行图标
+    SPECIAL_CONTINUE = 20;
+    // 标准小环岛,绕环岛左转,右侧通行地区的逆时针环岛
+    ENTRY_RING_LEFT = 21;
+    // 标准小环岛,绕环岛右转,右侧通行地区的逆时针环岛
+    ENTRY_RING_RIGHT = 22;
+    // 标准小环岛,绕环岛直行,右侧通行地区的逆时针环岛
+    ENTRY_RING_CONTINUE = 23;
+    // 标准小环岛,绕环岛调头,右侧通行地区的逆时针环岛
+    ENTRY_RING_UTURN = 24;
+    // 标准小环岛,绕环岛左转,左侧通行地区的顺时针环岛
+    ENTRY_LEFT_RING_LEFT = 25;
+    // 标准小环岛 绕环岛右转，左侧通行地区的顺时针环岛
+    ENTRY_LEFT_RING_RIGHT = 26;
+    // 标准小环岛 绕环岛直行，左侧通行地区的顺时针环岛
+    ENTRY_LEFT_RING_CONTINUE = 27;
+    // 标准小环岛 绕环岛调头，左侧通行地区的顺时针环岛
+    ENTRY_LEFTRINGU_TURN = 28;
+    //以下为骑行、步行专有图标
+    // 通过人行横道图标
+    CROSSWALK = 29;
+    // 通过过街天桥图标
+    OVERPASS = 30;
+    // 通过地下通道图标
+    UNDERPASS = 31;
+    // 通过广场图标
+    SQUARE = 32;
+    // 通过公园图标
+    PARK = 33;
+    // 通过扶梯图标
+    STAIRCASE = 34;
+    // 通过直梯图标
+    LIFT = 35;
+    // 通过索道图标
+    CABLEWAY = 36;
+    // 通过空中通道图标
+    SKY_CHANNEL = 37;
+    // 通过通道、建筑物穿越通道图标
+    CHANNEL = 38;
+    // 通过行人道路图标
+    WALK_ROAD = 39;
+    // 通过游船路线图标
+    CRUISE_ROUTE = 40;
+    // 通过观光车路线图标
+    SIGHTSEEING_BUSLINE = 41;
+    // 通过滑道图标
+    SLIDEWAY = 42;
+    // 通过阶梯图标
+    LADDER = 43;
+    // 通过斜坡
+    SLOPE = 44;
+    // 通过桥
+    BRIDGE = 45;
+    // 通过轮渡
+    FERRY = 46;
+    // 通过地铁通道
+    SUBWAY = 47;
+    // 进入建筑物
+    ENTER_BUILDING = 48;
+    // 离开建筑物
+    LEAVE_BUILDING = 49;
+    // 电梯换层
+    BY_ELEVATOR = 50;
+    // 楼梯换层
+    BY_STAIR = 51;
+    // 扶梯换层
+    BY_ESCALATOR = 52;
+    // 非导航段通过红绿灯路口
+    LOW_TRAFFIC_CROSS = 53;
+    // 非导航段通过普通路口
+    LOW_CROSS = 54;
+  }
+  enum LaneAction {
+    LANE_AHEAD = 0;
+    LANE_LEFT = 1;
+    LANE_AHEAD_LEFT = 2;
+    LANE_RIGHT = 3;
+    LANE_AHEAD_RIGHT = 4;
+    LANE_LU_TURN = 5;
+    LANE_LEFT_RIGHT = 6;
+    LANE_AHEAD_LEFT_RIGHT = 7;
+    LANE_RU_TURN = 8;
+    LANE_AHEAD_LU_TURN = 9;
+    LANE_AHEAD_RU_TURN = 10;
+    LANE_LEFT_LU_TURN = 11;
+    LANE_RIGHT_RU_TURN = 12;
+    LANE_LEFT_IN_AHEAD = 13;
+    LANE_LEFT_IN_LEFT_LU_TURN = 14;
+    LANE_RESERVED = 15;
+    LANE_AHEAD_LEFT_LU_TURN = 16;
+    LANE_RIGHT_RU_TURN_EX = 17;
+    LANE_LEFT_RU_TURN = 18;
+    LANE_AHEAD_RIGHT_RU_TURN = 19;
+    LANE_LEFT_LU_TURN_EX = 20;
+    LANE_BUS = 21;
+    LANE_EMPTY = 22;
+    LANE_VARIABLE = 23;
+    LANE_NULL = 255;
+  }
+  message NavigationInfo {
+    optional NavigationIcon intersection_type = 1 [default = STRAIGHT];
+    optional uint32 intersection_distance = 3 [default = 500];
+    //   optional uint32 speed_limit = 5;
+  }
+  message TrafficLightStatus {
+    required bool has_traffic_light = 1 [default = true];
+    required float traffic_light_distance = 2 [default = 0];
+  }
+  message RouteInfo {
+    optional rina.common.Header header = 1;
+    repeated NavigationInfo navigation_info = 2;
+    repeated LaneAction all_lanes = 3;
+    repeated LaneAction recommend_lanes = 4;
+    optional TrafficLightStatus tl_status = 5;
+  }
