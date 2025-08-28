@@ -1,6 +1,3 @@
 
-[DBG] t=1753342210295263759: pos(2,), vel(2,), acc(2,), theta=<class 'float'>, ts=<class 'int'>
-238634.39200895448
-[DBG] t=1753342210295263759: pos(2,), vel(2,), acc(2,), theta=<class 'float'>, ts=<class 'int'>
-238617.27938456627
-[DBG] t=1753342210295263759: pos(2,), vel(2,), acc(2,), theta=<class 'float'>, ts=<class 'int'>
+Data_parser script
+.record --> .json 
