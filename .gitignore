@@ -1,3 +1,5 @@
 task/
 temp/
 wuxi/
+output/
+output_npz/

@@ -1,0 +1,16 @@
+# 1. 新建一个没有历史的分支
+git checkout -- clean-main
+
+# 2. 清空索引（不删你本地文件）
+git rm -r --cached .
+
+# 3. 忽略数据目录
+printf "task/\ntemp/\nwuxi\n" > .gitignore
+
+# 4. 重新提交需要的文件
+git add .
+git commit -m "init without data dirs"
+
+# 5. 改分支名为 main，并推送到远端
+git branch -M main
+git push -u origin main --force

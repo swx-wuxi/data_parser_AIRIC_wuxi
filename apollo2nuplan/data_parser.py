@@ -27,7 +27,7 @@ ROUTE_INFO_TOPIC = "/rina/route_info"
 
 # === 轨迹配置参数 ===
 SCENE_DURATION = 20  # 场景固定时长20秒，采样频率10Hz
-FRAME_TIMES = [3,13]  # 需要采样的帧时间点（秒）
+FRAME_TIMES = [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]  # 需要采样的帧时间点（秒）
 HISTORY_DURATION = 2.0  # 历史轨迹时长 （20帧）
 FUTURE_DURATION = 8.0   # 未来轨迹时长  （80帧）
 TIME_TOLERANCE = 0.5 * 1e9  # 轨迹时间对齐容差
