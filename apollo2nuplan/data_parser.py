@@ -27,7 +27,7 @@ ROUTE_INFO_TOPIC = "/rina/route_info"
 
 # === 轨迹配置参数 ===
 SCENE_DURATION = 20  # 场景固定时长20秒，采样频率10Hz
-FRAME_TIMES = [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]  # 需要采样的帧时间点（秒）
+FRAME_TIMES = [3,4,5,6,7,8,9,10,11,12]  # 需要采样的帧时间点（秒）
 HISTORY_DURATION = 2.0  # 历史轨迹时长 （20帧）
 FUTURE_DURATION = 8.0   # 未来轨迹时长  （80帧）
 TIME_TOLERANCE = 0.5 * 1e9  # 轨迹时间对齐容差
@@ -264,7 +264,7 @@ def process_vector_map(ego_x, ego_y, ego_heading,
         vector_map["map_crosswalks"].append([[0]*3]*CROSSWALK_PARAMS[1])
 
     # === 处理导航路径车道 ===
-    logging.info("=====4A.处理导航路径车道route_lanes=====")
+    # logging.info("=====4A.处理导航路径车道route_lanes=====")
     def find_current_lane(hd_map, ego_x, ego_y):
         """通过坐标查找当前所在车道"""
         min_dist = float('inf')
@@ -327,7 +327,7 @@ def process_vector_map(ego_x, ego_y, ego_heading,
         return vector_map
 
     # 步骤2：收集相关车道（当前+同向邻居+后继）
-    logging.info("=====4B.找到相关车道，开始搜集信息======")
+    # logging.info("=====4B.找到相关车道，开始搜集信息======")
     intersection_type = current_nav_info.intersection_type if current_nav_info else 0
     route_lane_set = set()
     current_lane_id = str(current_lane.id)
@@ -443,7 +443,7 @@ def process_vector_map(ego_x, ego_y, ego_heading,
     while len(vector_map["route_lanes"]) < ROUTE_LANE_PARAMS[0]:
         vector_map["route_lanes"].append([[0]*3]*ROUTE_LANE_PARAMS[1])
 
-    logging.info("=====4C返回vector map======")
+    # logging.info("=====4C返回vector map======")
     # print("Return vector map : %s",vector_map)
     return vector_map
 
@@ -1167,6 +1167,9 @@ def process_record(record_path, output_base_dir):
                 break
         scene_windows.append((current_start, scene_end))
         current_start = scene_end
+    logging.info(f"pose_times范围: {pose_times[0]/1e9:.2f}s → {pose_times[-1]/1e9:.2f}s "
+             f"总时长={(pose_times[-1]-pose_times[0])/1e9:.2f} 秒")
+    logging.info(f"切分得到 {len(scene_windows)} 个场景")
 
     logging.info("场景划分结束")
     
@@ -1373,6 +1376,7 @@ def process_record(record_path, output_base_dir):
         # 从路径中获取时间戳部分
         
         parts = record_path.split("/")
+        print(parts)
         # print(parts)
         # if len(parts) < 8:
         #     logging.info(f"无效文件路径格式：{record_path}")
